@@ -1,10 +1,10 @@
-FROM openjdk:11
-VOLUME /tmp
-EXPOSE 8080
+FROM maven:3.8.4-openjdk-11-slim AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
 COPY pom.xml pom.xml
-COPY src src
-RUN mvn clean package
-ARG JAR_FILE=target/springboot-ecommerce-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
-
+RUN mvn clean package -DskipTests
+FROM openjdk:11-jre-slim
+WORKDIR /app
+COPY-from=build /app/target/springboot-ecommerce-0.0.1-SNAPSHOT.jar .
+CMD ["java", "-jar", "springboot-ecommerce-0.0.1-SNAPSHOT.jar"]
